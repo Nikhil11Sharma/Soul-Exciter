@@ -1,27 +1,13 @@
 // /api/products.js
 //
 // Vercel Serverless Function that persists the product catalog in Upstash
-// Redis, so every device/browser that opens the site sees the SAME list
-// (instead of each browser's own React state, which is what was happening
-// before — hence products disappearing on reload / not showing on other
-// devices).
-//
-// ── SETUP ──────────────────────────────────────────────────────────────
-// 1. Create a free Redis database at https://console.upstash.com
-//    (or, from your Vercel dashboard: Storage tab → Browse Marketplace →
-//    Upstash → Create Database — this auto-fills the env vars for you).
-// 2. In Vercel → your project → Settings → Environment Variables, add:
-//      UPSTASH_REDIS_REST_URL
-//      UPSTASH_REDIS_REST_TOKEN
-//    (found on the database's "REST API" tab in the Upstash console).
-// 3. Redeploy the project so the function picks up the env vars.
-// ───────────────────────────────────────────────────────────────────────
+// Redis, so every device/browser that opens the site sees the SAME list.
 
-const REDIS_URL = process.env.UPSTASH_REDIS_REST_URL;
-const REDIS_TOKEN = process.env.UPSTASH_REDIS_REST_TOKEN;
 const KEY = "se:products";
 
 async function redisGet(key) {
+  const REDIS_URL = process.env.UPSTASH_REDIS_REST_URL;
+  const REDIS_TOKEN = process.env.UPSTASH_REDIS_REST_TOKEN;
   const r = await fetch(`${REDIS_URL}/get/${key}`, {
     headers: { Authorization: `Bearer ${REDIS_TOKEN}` },
   });
@@ -31,6 +17,8 @@ async function redisGet(key) {
 }
 
 async function redisSet(key, value) {
+  const REDIS_URL = process.env.UPSTASH_REDIS_REST_URL;
+  const REDIS_TOKEN = process.env.UPSTASH_REDIS_REST_TOKEN;
   const r = await fetch(`${REDIS_URL}/set/${key}`, {
     method: "POST",
     headers: {
@@ -57,7 +45,7 @@ async function saveProducts(list) {
   await redisSet(KEY, JSON.stringify(list));
 }
 
-module.exports = async function handler(req, res) {
+export default async function handler(req, res) {
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Methods", "GET,POST,PUT,DELETE,OPTIONS");
   res.setHeader("Access-Control-Allow-Headers", "Content-Type");
@@ -65,6 +53,9 @@ module.exports = async function handler(req, res) {
     res.status(200).end();
     return;
   }
+
+  const REDIS_URL = process.env.UPSTASH_REDIS_REST_URL;
+  const REDIS_TOKEN = process.env.UPSTASH_REDIS_REST_TOKEN;
 
   if (!REDIS_URL || !REDIS_TOKEN) {
     res.status(500).json({
@@ -82,7 +73,6 @@ module.exports = async function handler(req, res) {
     }
 
     if (req.method === "POST") {
-      // Add a new product. Body: the product object (no id required).
       const body = typeof req.body === "string" ? JSON.parse(req.body) : req.body;
       if (!body || !body.name) {
         res.status(400).json({ error: "Product must at least have a name" });
@@ -97,7 +87,6 @@ module.exports = async function handler(req, res) {
     }
 
     if (req.method === "PUT") {
-      // Update an existing product. Body: { id, ...fieldsToChange }.
       const body = typeof req.body === "string" ? JSON.parse(req.body) : req.body;
       const { id, ...changes } = body || {};
       if (!id) {
@@ -128,4 +117,4 @@ module.exports = async function handler(req, res) {
   } catch (err) {
     res.status(500).json({ error: err.message || "Unexpected server error" });
   }
-};
+}
