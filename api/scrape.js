@@ -1,27 +1,9 @@
 // /api/scrape.js
 //
-// Given ?url=<affiliate link>, fetches that page server-side (this has to
-// happen on the server, not the browser, because the retailer's site won't
-// allow a cross-origin fetch from your frontend / CORS) and pulls out a
-// best-effort product name, image, price and rating from:
-//   1. Open Graph / meta tags (og:title, og:image, product:price:amount…)
-//   2. schema.org "Product" JSON-LD blocks, when the page includes one
-//   3. common itemprop="price" / itemprop="ratingValue" markers
-//
-// ── IMPORTANT LIMITATIONS ────────────────────────────────────────────
-// - Big retailers (Amazon, Flipkart, Myntra, Ajio, etc.) frequently block
-//   server-side/bot requests, or render price & rating with client-side
-//   JavaScript that never appears in the raw HTML this function receives.
-//   For those, you'll often only get the name/image, or nothing at all —
-//   the UI should let the admin fill in the rest by hand.
-// - This is a best-effort autofill, not a guarantee. Always eyeball the
-//   result before publishing.
-// - Respect each retailer's Terms of Service around automated fetching.
-//
-// Requires the "cheerio" package: run `npm install cheerio` in your
-// project root before deploying.
+// Given ?url=<affiliate link>, fetches that page server-side and pulls out
+// product name, image, price and rating from meta tags and JSON-LD.
 
-const cheerio = require("cheerio");
+import { load } from "cheerio";
 
 function firstNumber(str) {
   if (str === undefined || str === null) return undefined;
@@ -30,7 +12,7 @@ function firstNumber(str) {
   return m ? Number(m[0]) : undefined;
 }
 
-module.exports = async function handler(req, res) {
+export default async function handler(req, res) {
   res.setHeader("Access-Control-Allow-Origin", "*");
 
   const targetUrl = req.query.url;
@@ -58,7 +40,7 @@ module.exports = async function handler(req, res) {
     }
 
     const html = await pageRes.text();
-    const $ = cheerio.load(html);
+    const $ = load(html);
 
     const meta = (name) =>
       $(`meta[property="${name}"]`).attr("content") || $(`meta[name="${name}"]`).attr("content");
@@ -71,7 +53,6 @@ module.exports = async function handler(req, res) {
       rating: undefined,
     };
 
-    // schema.org Product JSON-LD — the most reliable source when present.
     $('script[type="application/ld+json"]').each((_, el) => {
       try {
         const parsed = JSON.parse($(el).contents().text());
@@ -98,11 +79,10 @@ module.exports = async function handler(req, res) {
           }
         }
       } catch {
-        // Ignore malformed / unrelated JSON-LD blocks and keep looking.
+        // Ignore malformed JSON-LD blocks
       }
     });
 
-    // Fallback itemprop markers some sites still use.
     if (!result.price) {
       const p = $('[itemprop="price"]').attr("content") || $('[itemprop="price"]').first().text();
       result.price = firstNumber(p);
@@ -122,4 +102,4 @@ module.exports = async function handler(req, res) {
       error: "Couldn't reach that page: " + err.message,
     });
   }
-};
+}
