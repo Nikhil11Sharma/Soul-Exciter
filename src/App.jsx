@@ -12,22 +12,19 @@ import {
 const ADMIN_PASSWORD = "excite2026";
 
 const COLORS = {
-  ink: "#171B18",
-  dusk: "#12241B",
-  duskLight: "#4A473F",
-  cream: "#F1EDE3",
-  card: "#FBFAF6",
-  orange: "#1F4B3A",
-  orangeDark: "#A14E3A",
-  yellow: "#B8935A",
-  muted: "#8F8A7C",
-  mint: "#5C7A6C",
-  line: "#E2DDCF",
+  ink: '#e2e8f0',
+  dusk: '#0a0e1a',
+  duskLight: '#1e293b',
+  cream: '#0a0e1a',
+  card: 'rgba(255,255,255,0.05)',
+  orange: '#00d4ff',
+  orangeDark: '#f43f5e',
+  yellow: '#a855f7',
+  muted: '#64748b',
+  mint: '#00d4ff',
+  line: 'rgba(255,255,255,0.08)',
 };
 
-// Two-level category tree, modeled on Amazon's "Mobiles & Electronics" style
-// browse page: a top-level section (shown as a pill / sidebar entry) that
-// opens into a grid of subcategory tiles with their own icon + label.
 const CATEGORY_TREE = [
   {
     name: "Mobiles & Electronics",
@@ -83,12 +80,8 @@ const CATEGORY_TREE = [
   },
 ];
 
-const TINT_PALETTE = ["#F1EFE9", "#F4EFE7", "#EDEFEC", "#EFF1EC", "#F0EEEA", "#F3EDEE", "#EDF1EF", "#F3F0E7", "#E9F0ED", "#F3ECEA"];
+const TINT_PALETTE = ['#0f172a','#131c2e','#0e1628','#101a2c','#0f1726','#14192d','#0d1525','#12182b','#0e1829','#13172a'];
 
-// Flattened lookup: subcategory name -> { icon, tint, parent } so existing
-// product-card / filtering code can keep treating `product.category` as a
-// single string (the subcategory), while we still know which top-level
-// section it belongs to.
 const CATEGORY_META = {};
 (function buildCategoryMeta() {
   let i = 0;
@@ -105,27 +98,24 @@ function parentCategoryOf(subName) {
 }
 
 const PLATFORM_COLORS = {
-  Amazon: { bg: "#F1EEE7", text: "#5C5647" },
-  Flipkart: { bg: "#EAEEF3", text: "#41505C" },
-  Myntra: { bg: "#F3EBEC", text: "#5C4650" },
-  Ajio: { bg: "#F3ECEA", text: "#5C4A45" },
-  Nykaa: { bg: "#F3EAEE", text: "#5C4451" },
-  Meesho: { bg: "#EEEAF2", text: "#4F4560" },
-  "Tata Cliq": { bg: "#E9F0ED", text: "#3F5A50" },
-  FirstCry: { bg: "#F3EFE5", text: "#5C5233" },
-  Snapdeal: { bg: "#F3ECE6", text: "#5C4B3A" },
-  BigBasket: { bg: "#EBF0EA", text: "#445B41" },
-  Croma: { bg: "#EAEBF2", text: "#454A60" },
-  Pepperfry: { bg: "#F0EBE5", text: "#5A4B38" },
+  Amazon: { bg: 'rgba(255,153,0,0.15)', text: '#fbbf24' },
+  Flipkart: { bg: 'rgba(47,128,237,0.15)', text: '#60a5fa' },
+  Myntra: { bg: 'rgba(255,68,104,0.15)', text: '#fb7185' },
+  Ajio: { bg: 'rgba(255,107,53,0.15)', text: '#fb923c' },
+  Nykaa: { bg: 'rgba(252,92,125,0.15)', text: '#fb7185' },
+  Meesho: { bg: 'rgba(98,0,234,0.15)', text: '#a78bfa' },
+  'Tata Cliq': { bg: 'rgba(39,174,96,0.15)', text: '#4ade80' },
+  FirstCry: { bg: 'rgba(0,166,81,0.15)', text: '#4ade80' },
+  Snapdeal: { bg: 'rgba(228,57,53,0.15)', text: '#f87171' },
+  BigBasket: { bg: 'rgba(132,204,22,0.15)', text: '#a3e635' },
+  Croma: { bg: 'rgba(0,189,126,0.15)', text: '#34d399' },
+  Pepperfry: { bg: 'rgba(243,120,32,0.15)', text: '#fb923c' },
 };
 
 const PLATFORM_LIST = Object.keys(PLATFORM_COLORS);
 
 const SEED_PRODUCTS = [];
 
-// Products now live in Upstash Redis via these serverless routes (see
-// /api/products.js and /api/scrape.js) instead of only in React state, so
-// every device sees the same list and it survives page reloads.
 const API_PRODUCTS = "/api/products";
 const API_SCRAPE = "/api/scrape";
 
@@ -145,15 +135,31 @@ function FontLoader() {
       @import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Inter:wght@400;500;600;700;800&display=swap');
       .se-root { font-family: 'Inter', sans-serif; }
       .se-display { font-family: 'Fraunces', 'Inter', serif; font-weight: 500; letter-spacing: -0.01em; }
+      
       @keyframes se-pop { from { transform: scale(0.98); opacity: 0; } to { transform: scale(1); opacity: 1; } }
       @keyframes se-slidein { from { transform: translateY(8px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
       @keyframes se-bump { 0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }
-      .se-card { transition: transform 0.3s cubic-bezier(.2,.7,.3,1), box-shadow 0.3s cubic-bezier(.2,.7,.3,1), border-color 0.3s ease; box-shadow: 0 1px 2px rgba(23,27,24,0.04), 0 10px 24px -18px rgba(23,27,24,0.16); }
-      .se-card:hover { transform: translateY(-4px); box-shadow: 0 2px 4px rgba(23,27,24,0.06), 0 20px 32px -16px rgba(23,27,24,0.22); border-color: #C9C2AE; }
-      .se-card:hover .se-img { transform: scale(1.03); }
+      
+      @keyframes se-float { 0%,100% { transform: translateY(0px); } 50% { transform: translateY(-20px); } }
+      @keyframes se-gradient-text { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
+      @keyframes se-glow { 0%,100% { box-shadow: 0 0 5px rgba(0,212,255,0.3); } 50% { box-shadow: 0 0 20px rgba(0,212,255,0.6), 0 0 40px rgba(168,85,247,0.3); } }
+      @keyframes se-shimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
+
+      .se-card { 
+        transition: transform 0.3s cubic-bezier(.2,.7,.3,1), box-shadow 0.3s cubic-bezier(.2,.7,.3,1), border-color 0.3s ease; 
+        box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06); 
+      }
+      .se-card:hover { 
+        transform: translateY(-8px); 
+        box-shadow: 0 0 15px rgba(0,212,255,0.2), 0 0 30px rgba(0,212,255,0.1); 
+        border-color: rgba(0,212,255,0.3) !important; 
+      }
+      .se-card:hover .se-img { transform: scale(1.08); }
       .se-img { transition: transform 0.5s cubic-bezier(.2,.7,.3,1); }
-      .se-btn { transition: transform 0.15s ease, background-color 0.2s ease, border-color 0.2s ease, opacity 0.15s ease; }
+      
+      .se-btn { transition: transform 0.15s ease, background-color 0.2s ease, border-color 0.2s ease, opacity 0.15s ease, box-shadow 0.2s ease; }
       .se-btn:active { transform: translateY(1px); opacity: 0.85; }
+      
       .se-fadein { animation: se-slidein 0.4s cubic-bezier(.2,.7,.3,1) both; }
       .se-pop { animation: se-pop 0.22s cubic-bezier(.2,.7,.3,1) both; }
       .se-bump { animation: se-bump 0.32s cubic-bezier(.2,.7,.3,1); }
@@ -163,10 +169,40 @@ function FontLoader() {
       .se-tab-icon { transition: transform 0.2s cubic-bezier(.2,.7,.3,1); }
       .se-scrollx::-webkit-scrollbar { display: none; }
       .se-scrollx { -ms-overflow-style: none; scrollbar-width: none; }
+
+      .se-gradient-text { background: linear-gradient(135deg, #00d4ff, #a855f7, #00d4ff); background-size: 200% 200%; -webkit-background-clip: text; -webkit-text-fill-color: transparent; animation: se-gradient-text 4s ease infinite; }
+      .se-glow-btn { animation: se-glow 2s ease-in-out infinite; }
+      .se-glass { background: rgba(255,255,255,0.05); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid rgba(255,255,255,0.08); }
+
       @media (prefers-reduced-motion: reduce) {
-        .se-card, .se-img, .se-btn, .se-fadein, .se-pop, .se-bump, .se-meter-fill, .se-heart, .se-tab-icon { animation: none !important; transition: none !important; }
+        .se-card, .se-img, .se-btn, .se-fadein, .se-pop, .se-bump, .se-meter-fill, .se-heart, .se-tab-icon, .se-gradient-text, .se-glow-btn, .se-float, .se-shimmer { animation: none !important; transition: none !important; }
       }
     `}</style>
+  );
+}
+
+function ParticlesBackground() {
+  const particles = React.useMemo(() => Array.from({ length: 25 }, (_, i) => ({
+    id: i,
+    size: 2 + Math.random() * 4,
+    left: Math.random() * 100,
+    top: Math.random() * 100,
+    duration: 15 + Math.random() * 25,
+    delay: Math.random() * 10,
+    opacity: 0.08 + Math.random() * 0.2,
+    color: i % 3 === 0 ? '#a855f7' : '#00d4ff',
+  })), []);
+  return (
+    <div style={{ position: 'fixed', inset: 0, pointerEvents: 'none', zIndex: 0, overflow: 'hidden' }}>
+      {particles.map(p => (
+        <div key={p.id} style={{
+          position: 'absolute', left: p.left + '%', top: p.top + '%',
+          width: p.size, height: p.size, borderRadius: '50%',
+          background: p.color, opacity: p.opacity,
+          animation: `se-float ${p.duration}s ease-in-out ${p.delay}s infinite`,
+        }} />
+      ))}
+    </div>
   );
 }
 
@@ -175,7 +211,7 @@ function StarRow({ rating }) {
   return (
     <div style={{ display: "flex", alignItems: "center", gap: 3 }}>
       {[0, 1, 2, 3, 4].map((i) => (
-        <Star key={i} size={13} fill={i < full ? COLORS.yellow : "none"} stroke={i < full ? COLORS.yellow : COLORS.muted} />
+        <Star key={i} size={13} fill={i < full ? "#00d4ff" : "none"} stroke={i < full ? "#00d4ff" : COLORS.muted} />
       ))}
       <span style={{ fontSize: 12, color: COLORS.muted, marginLeft: 2, fontWeight: 600 }}>{rating}</span>
     </div>
@@ -191,14 +227,14 @@ function ExciteMeter({ score }) {
         </span>
         <span style={{ fontSize: 11, fontWeight: 700, color: COLORS.ink }}>{score}%</span>
       </div>
-      <div style={{ height: 3, borderRadius: 999, background: "#EEEBE3", overflow: "hidden" }}>
+      <div style={{ height: 3, borderRadius: 999, background: "rgba(255,255,255,0.06)", overflow: "hidden" }}>
         <div
           className="se-meter-fill"
           style={{
             height: "100%",
             width: score + "%",
             borderRadius: 999,
-            background: COLORS.orange,
+            background: "linear-gradient(90deg, #00d4ff, #a855f7)",
           }}
         />
       </div>
@@ -217,10 +253,10 @@ function PlatformBadge({ platform }) {
 
 function ProductCard({ product, inWishlist, onToggleWishlist, onAddToCart, onViewDeal, onEdit, onDelete, index = 0 }) {
   const { discount, score } = exciteScore(product);
-  const meta = CATEGORY_META[product.category] || { icon: LayoutGrid, tint: "#F1EFE9" };
+  const meta = CATEGORY_META[product.category] || { icon: LayoutGrid, tint: "#0f172a" };
   const Icon = meta.icon;
   return (
-    <div className="se-card se-fadein" style={{ background: COLORS.card, borderRadius: 14, overflow: "hidden", border: "1px solid " + COLORS.line, display: "flex", flexDirection: "column", animationDelay: Math.min(index * 40, 320) + "ms" }}>
+    <div className="se-card se-fadein se-glass" style={{ borderRadius: 14, overflow: "hidden", display: "flex", flexDirection: "column", animationDelay: Math.min(index * 40, 320) + "ms" }}>
       <div style={{ position: "relative", height: 160, background: meta.tint, overflow: "hidden" }}>
         <img
           src={product.image}
@@ -238,7 +274,7 @@ function ProductCard({ product, inWishlist, onToggleWishlist, onAddToCart, onVie
             className="se-btn"
             style={{
               width: 30, height: 30, borderRadius: "50%",
-              background: "rgba(255,255,255,0.92)", border: "none", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer",
+              background: "rgba(10,14,26,0.8)", border: "1px solid rgba(255,255,255,0.1)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", backdropFilter: "blur(4px)"
             }}
             aria-label="Toggle wishlist"
           >
@@ -248,7 +284,7 @@ function ProductCard({ product, inWishlist, onToggleWishlist, onAddToCart, onVie
             <button
               onClick={() => onEdit(product)}
               className="se-btn"
-              style={{ width: 30, height: 30, borderRadius: "50%", background: "rgba(255,255,255,0.92)", border: "none", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}
+              style={{ width: 30, height: 30, borderRadius: "50%", background: "rgba(10,14,26,0.8)", border: "1px solid rgba(255,255,255,0.1)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", backdropFilter: "blur(4px)" }}
               aria-label="Edit product"
             >
               <Pencil size={13} color={COLORS.ink} />
@@ -258,7 +294,7 @@ function ProductCard({ product, inWishlist, onToggleWishlist, onAddToCart, onVie
             <button
               onClick={() => onDelete(product.id)}
               className="se-btn"
-              style={{ width: 30, height: 30, borderRadius: "50%", background: "rgba(255,255,255,0.92)", border: "none", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}
+              style={{ width: 30, height: 30, borderRadius: "50%", background: "rgba(10,14,26,0.8)", border: "1px solid rgba(255,255,255,0.1)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", backdropFilter: "blur(4px)" }}
               aria-label="Delete product"
             >
               <Trash2 size={13} color={COLORS.orangeDark} />
@@ -266,7 +302,7 @@ function ProductCard({ product, inWishlist, onToggleWishlist, onAddToCart, onVie
           )}
         </div>
         {discount > 0 && (
-          <div style={{ position: "absolute", bottom: 8, left: 10, background: COLORS.ink, color: "#fff", fontSize: 10, fontWeight: 800, padding: "3px 8px", borderRadius: 6 }}>
+          <div style={{ position: "absolute", bottom: 8, left: 10, background: "linear-gradient(135deg, #00d4ff, #a855f7)", color: "#fff", fontSize: 10, fontWeight: 800, padding: "3px 8px", borderRadius: 6 }}>
             {discount}% OFF
           </div>
         )}
@@ -288,14 +324,14 @@ function ProductCard({ product, inWishlist, onToggleWishlist, onAddToCart, onVie
           <button
             onClick={() => onAddToCart(product.id)}
             className="se-btn"
-            style={{ flex: 1, padding: "9px 0", borderRadius: 10, border: "1.5px solid " + COLORS.ink, background: "transparent", color: COLORS.ink, fontSize: 12.5, fontWeight: 700, cursor: "pointer" }}
+            style={{ flex: 1, padding: "9px 0", borderRadius: 10, border: "1.5px solid rgba(255,255,255,0.2)", background: "transparent", color: "#e2e8f0", fontSize: 12.5, fontWeight: 700, cursor: "pointer" }}
           >
             Save to cart
           </button>
           <button
             onClick={() => onViewDeal(product)}
             className="se-btn"
-            style={{ flex: 1, padding: "9px 0", borderRadius: 10, border: "none", background: COLORS.orange, color: "#fff", fontSize: 12.5, fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 5 }}
+            style={{ flex: 1, padding: "9px 0", borderRadius: 10, border: "none", background: "linear-gradient(135deg, #00d4ff, #a855f7)", color: "#fff", fontSize: 12.5, fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 5 }}
           >
             View deal <ExternalLink size={13} />
           </button>
@@ -307,14 +343,14 @@ function ProductCard({ product, inWishlist, onToggleWishlist, onAddToCart, onVie
 
 function EmptyState({ title, body, ctaLabel, onCta, Icon }) {
   return (
-    <div style={{ textAlign: "center", padding: "56px 20px", background: COLORS.card, borderRadius: 14, border: "1px solid " + COLORS.line }}>
-      <div style={{ width: 56, height: 56, borderRadius: "50%", background: "#FFF1E8", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 16px" }}>
+    <div className="se-glass" style={{ textAlign: "center", padding: "56px 20px", borderRadius: 14 }}>
+      <div style={{ width: 56, height: 56, borderRadius: "50%", background: "linear-gradient(135deg, rgba(0,212,255,0.2), rgba(168,85,247,0.2))", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 16px" }}>
         <Icon size={24} color={COLORS.orange} />
       </div>
       <h3 style={{ fontSize: 17, fontWeight: 800, color: COLORS.ink, margin: "0 0 6px" }}>{title}</h3>
       <p style={{ fontSize: 13.5, color: COLORS.muted, margin: "0 0 18px", maxWidth: 320, marginLeft: "auto", marginRight: "auto" }}>{body}</p>
       {ctaLabel && (
-        <button onClick={onCta} className="se-btn" style={{ background: COLORS.ink, color: "#fff", border: "none", padding: "10px 22px", borderRadius: 10, fontSize: 13, fontWeight: 700, cursor: "pointer" }}>
+        <button onClick={onCta} className="se-btn" style={{ background: COLORS.ink, color: "#0a0e1a", border: "none", padding: "10px 22px", borderRadius: 10, fontSize: 13, fontWeight: 700, cursor: "pointer" }}>
           {ctaLabel}
         </button>
       )}
@@ -348,8 +384,6 @@ export default function SoulExciterApp() {
     name: "", category: "Mobiles & Accessories", platform: "Amazon", price: "", originalPrice: "", rating: "4.5", affiliateLink: "", image: "",
   });
 
-  // Load the shared product list from the server on first mount, so every
-  // device/browser sees the same catalog instead of an empty local array.
   useEffect(() => {
     let cancelled = false;
     (async () => {
@@ -476,7 +510,6 @@ export default function SoulExciterApp() {
     setProducts((ps) => ps.map((p) => (p.id === product.id ? { ...p, clicks: p.clicks + 1 } : p)));
     setClickHistory((h) => [{ id: product.id + "-" + Date.now(), name: product.name, platform: product.platform, image: product.image }, ...h].slice(0, 12));
     window.open(product.affiliateLink, "_blank", "noopener,noreferrer");
-    // Fire-and-forget: don't make the user wait on this to open their link.
     fetch(API_PRODUCTS, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
@@ -534,9 +567,6 @@ export default function SoulExciterApp() {
     }
   }
 
-  // Calls /api/scrape with the pasted affiliate link and fills in whatever
-  // it managed to find (name, image, price, rating). Big retailers often
-  // block or hide this data, so the admin should still review the fields.
   async function autofillFromLink() {
     if (!form.affiliateLink) {
       notify("Paste an affiliate link first");
@@ -603,19 +633,20 @@ export default function SoulExciterApp() {
   ];
 
   return (
-    <div className="se-root" style={{ background: COLORS.cream, minHeight: "100vh", width: "100%" }}>
+    <div className="se-root" style={{ background: 'linear-gradient(135deg, #0a0e1a 0%, #0f172a 50%, #0a0e1a 100%)', minHeight: "100vh", width: "100%" }}>
       <FontLoader />
+      <ParticlesBackground />
 
       {/* NAV */}
-      <div style={{ position: "sticky", top: 0, zIndex: 40, background: COLORS.dusk, padding: "12px 16px", borderBottom: "1px solid rgba(255,255,255,0.08)" }}>
+      <div style={{ position: "sticky", top: 0, zIndex: 40, background: 'rgba(10,14,26,0.85)', backdropFilter: 'blur(20px)', borderBottom: '1px solid rgba(255,255,255,0.06)', padding: "12px 16px" }}>
         <div style={{ maxWidth: 1100, margin: "0 auto", display: "flex", alignItems: "center", gap: 16, flexWrap: "wrap" }}>
           <div style={{ display: "flex", flexDirection: "column", lineHeight: 1, marginRight: 6 }}>
-            <span className="se-display" style={{ color: "#fff", fontSize: 24 }}>SOUL EXCITER</span>
+            <span className="se-display se-gradient-text" style={{ fontSize: 24 }}>SOUL EXCITER</span>
             <span style={{ color: COLORS.yellow, fontSize: 9, fontWeight: 700, letterSpacing: "0.18em" }}>— DO WHAT EXCITES —</span>
           </div>
 
-          <div style={{ flex: 1, minWidth: 160, display: "flex", alignItems: "center", background: "rgba(255,255,255,0.1)", borderRadius: 10, padding: "8px 12px", gap: 8 }}>
-            <Search size={16} color="#ACA79A" />
+          <div style={{ flex: 1, minWidth: 160, display: "flex", alignItems: "center", background: "rgba(255,255,255,0.06)", borderRadius: 10, padding: "8px 12px", gap: 8 }}>
+            <Search size={16} color="#64748b" />
             <input
               placeholder="Search earbuds, sneakers, watches..."
               style={{ background: "transparent", border: "none", outline: "none", color: "#fff", fontSize: 13, width: "100%" }}
@@ -634,7 +665,7 @@ export default function SoulExciterApp() {
                   className="se-btn"
                   style={{
                     position: "relative", display: "flex", alignItems: "center", gap: 6, padding: "8px 12px", borderRadius: 10,
-                    border: "none", cursor: "pointer", background: active ? COLORS.orange : "transparent", color: active ? "#fff" : "#ACA79A", fontSize: 12.5, fontWeight: 700,
+                    border: "none", cursor: "pointer", background: active ? 'linear-gradient(135deg, #00d4ff, #a855f7)' : "transparent", color: active ? "#fff" : "#ACA79A", fontSize: 12.5, fontWeight: 700,
                   }}
                 >
                   <span className={item.key === "cart" && cartBump ? "se-bump" : ""} style={{ display: "flex" }}>
@@ -642,7 +673,7 @@ export default function SoulExciterApp() {
                   </span>
                   {item.label}
                   {count > 0 && (
-                    <span style={{ position: "absolute", top: -4, right: -4, background: COLORS.yellow, color: COLORS.ink, fontSize: 10, fontWeight: 800, borderRadius: "50%", width: 17, height: 17, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                    <span style={{ position: "absolute", top: -4, right: -4, background: COLORS.yellow, color: COLORS.dusk, fontSize: 10, fontWeight: 800, borderRadius: "50%", width: 17, height: 17, display: "flex", alignItems: "center", justifyContent: "center" }}>
                       {count}
                     </span>
                   )}
@@ -667,12 +698,12 @@ export default function SoulExciterApp() {
       {showAdminModal && (
         <div
           onClick={() => { setShowAdminModal(false); setAdminInput(""); setAdminError(false); }}
-          style={{ position: "fixed", inset: 0, background: "rgba(27,29,46,0.55)", zIndex: 70, display: "flex", alignItems: "center", justifyContent: "center", padding: 16 }}
+          style={{ position: "fixed", inset: 0, background: "rgba(10,14,26,0.8)", backdropFilter: "blur(4px)", zIndex: 70, display: "flex", alignItems: "center", justifyContent: "center", padding: 16 }}
         >
           <div
             onClick={(e) => e.stopPropagation()}
-            className="se-pop"
-            style={{ background: COLORS.card, borderRadius: 14, padding: 24, width: "100%", maxWidth: 320, boxShadow: "0 24px 48px -16px rgba(0,0,0,0.35)" }}
+            className="se-pop se-glass"
+            style={{ borderRadius: 14, padding: 24, width: "100%", maxWidth: 320, boxShadow: "0 0 15px rgba(0,212,255,0.2)", border: "1px solid rgba(0,212,255,0.3)" }}
           >
             <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
               <Lock size={18} color={COLORS.orange} />
@@ -686,10 +717,10 @@ export default function SoulExciterApp() {
               onChange={(e) => { setAdminInput(e.target.value); setAdminError(false); }}
               onKeyDown={(e) => { if (e.key === "Enter") submitAdminLogin(e); }}
               placeholder="Password"
-              style={{ ...inputStyle, borderColor: adminError ? COLORS.orangeDark : COLORS.line, marginBottom: 6 }}
+              style={{ ...inputStyle, borderColor: adminError ? COLORS.orangeDark : "rgba(255,255,255,0.1)", marginBottom: 6 }}
             />
             {adminError && <p style={{ fontSize: 11.5, color: COLORS.orangeDark, margin: "0 0 10px" }}>Incorrect password, try again.</p>}
-            <button type="button" onClick={submitAdminLogin} className="se-btn" style={{ width: "100%", marginTop: 8, background: COLORS.ink, color: "#fff", border: "none", padding: "10px 0", borderRadius: 10, fontWeight: 700, fontSize: 13, cursor: "pointer" }}>
+            <button type="button" onClick={submitAdminLogin} className="se-btn" style={{ width: "100%", marginTop: 8, background: COLORS.ink, color: COLORS.dusk, border: "none", padding: "10px 0", borderRadius: 10, fontWeight: 700, fontSize: 13, cursor: "pointer" }}>
               Unlock admin mode
             </button>
           </div>
@@ -700,24 +731,24 @@ export default function SoulExciterApp() {
         {tab === "home" && (
           <div className="se-fadein">
             {/* HERO */}
-            <div style={{ position: "relative", overflow: "hidden", borderRadius: 18, margin: "20px 0", padding: "56px 32px", background: `linear-gradient(150deg, ${COLORS.ink} 0%, ${COLORS.dusk} 60%, #16241C 100%)` }}>
-              <div style={{ position: "absolute", inset: 0, backgroundImage: "radial-gradient(rgba(255,255,255,0.05) 1px, transparent 1px)", backgroundSize: "22px 22px", opacity: 0.5 }} />
+            <div style={{ position: "relative", overflow: "hidden", borderRadius: 18, margin: "20px 0", padding: "56px 32px", background: 'linear-gradient(150deg, #0a0e1a 0%, #1a103a 40%, #0a1628 100%)' }}>
+              <div style={{ position: "absolute", inset: 0, backgroundImage: "radial-gradient(rgba(255,255,255,0.03) 1px, transparent 1px)", backgroundSize: "22px 22px" }} />
               <div style={{ position: "relative", maxWidth: 560 }}>
-                <span style={{ display: "inline-flex", alignItems: "center", gap: 6, color: COLORS.yellow, fontSize: 11, fontWeight: 700, letterSpacing: "0.1em", marginBottom: 18 }}>
+                <span style={{ display: "inline-flex", alignItems: "center", gap: 6, color: '#00d4ff', fontSize: 11, fontWeight: 700, letterSpacing: "0.1em", marginBottom: 18 }}>
                   <Sparkles size={12} /> HANDPICKED DEALS, DAILY
                 </span>
-                <h1 className="se-display" style={{ color: COLORS.cream, fontSize: 46, lineHeight: 1.08, margin: "0 0 16px" }}>
+                <h1 className="se-gradient-text se-display" style={{ fontSize: 46, lineHeight: 1.08, margin: "0 0 16px" }}>
                   Find it. Want it.<br />Do what excites.
                 </h1>
-                <p style={{ color: "#B9B6A9", fontSize: 14.5, margin: "0 0 28px", maxWidth: 420, lineHeight: 1.6 }}>
+                <p style={{ color: "#94a3b8", fontSize: 14.5, margin: "0 0 28px", maxWidth: 420, lineHeight: 1.6 }}>
                   Every product here is scored on our Excite Meter — real discounts, real ratings, zero guesswork. Tap a deal to grab it.
                 </p>
                 <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
-                  <button onClick={() => document.getElementById("se-grid")?.scrollIntoView({ behavior: "smooth" })} className="se-btn" style={{ background: COLORS.yellow, color: COLORS.ink, border: "none", padding: "12px 22px", borderRadius: 9, fontWeight: 700, fontSize: 13.5, cursor: "pointer" }}>
+                  <button onClick={() => document.getElementById("se-grid")?.scrollIntoView({ behavior: "smooth" })} className="se-btn se-glow-btn" style={{ background: 'linear-gradient(135deg, #00d4ff, #a855f7)', color: '#fff', border: "none", padding: "12px 22px", borderRadius: 9, fontWeight: 700, fontSize: 13.5, cursor: "pointer" }}>
                     Browse today's picks
                   </button>
                   {isAdmin && (
-                    <button onClick={() => { if (showAddForm) { setShowAddForm(false); } else { resetForm(); setShowAddForm(true); } }} className="se-btn" style={{ background: "transparent", color: COLORS.cream, border: "1px solid rgba(255,255,255,0.22)", padding: "12px 22px", borderRadius: 9, fontWeight: 600, fontSize: 13.5, cursor: "pointer", display: "flex", alignItems: "center", gap: 6 }}>
+                    <button onClick={() => { if (showAddForm) { setShowAddForm(false); } else { resetForm(); setShowAddForm(true); } }} className="se-btn" style={{ background: "transparent", color: '#e2e8f0', border: "1px solid rgba(255,255,255,0.2)", padding: "12px 22px", borderRadius: 9, fontWeight: 600, fontSize: 13.5, cursor: "pointer", display: "flex", alignItems: "center", gap: 6 }}>
                       <Plus size={15} /> List a product
                     </button>
                   )}
@@ -727,7 +758,7 @@ export default function SoulExciterApp() {
 
             {/* ADD PRODUCT PANEL */}
             {showAddForm && isAdmin && (
-              <div className="se-pop" style={{ background: COLORS.card, borderRadius: 14, border: "1px solid " + COLORS.line, padding: 22, marginBottom: 24, boxShadow: "0 1px 2px rgba(23,27,24,0.04), 0 10px 24px -18px rgba(23,27,24,0.16)" }}>
+              <div className="se-pop se-glass" style={{ borderRadius: 14, padding: 22, marginBottom: 24 }}>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
                   <h3 style={{ fontSize: 16, fontWeight: 800, color: COLORS.ink, margin: 0, display: "flex", alignItems: "center", gap: 7 }}>
                     <Package size={17} color={COLORS.orange} /> {editingId ? "Edit product" : "List a new affiliate product"}
@@ -741,17 +772,17 @@ export default function SoulExciterApp() {
                     <input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="AuraBeat Pro Earbuds" style={inputStyle} />
                   </FormField>
                   <FormField label="Category">
-                    <select value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })} style={inputStyle}>
+                    <select value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })} style={{...inputStyle, '& option': {background: COLORS.dusk}}}>
                       {CATEGORY_TREE.map((main) => (
-                        <optgroup key={main.name} label={main.name}>
+                        <optgroup key={main.name} label={main.name} style={{background: COLORS.dusk}}>
                           {main.subcategories.map((s) => <option key={s.name} value={s.name}>{s.name}</option>)}
                         </optgroup>
                       ))}
                     </select>
                   </FormField>
                   <FormField label="Platform">
-                    <select value={form.platform} onChange={(e) => setForm({ ...form, platform: e.target.value })} style={inputStyle}>
-                      {PLATFORM_LIST.map((pl) => <option key={pl} value={pl}>{pl}</option>)}
+                    <select value={form.platform} onChange={(e) => setForm({ ...form, platform: e.target.value })} style={{...inputStyle, '& option': {background: COLORS.dusk}}}>
+                      {PLATFORM_LIST.map((pl) => <option key={pl} value={pl} style={{background: COLORS.dusk}}>{pl}</option>)}
                     </select>
                   </FormField>
                   <FormField label="Sale price (₹)">
@@ -787,7 +818,7 @@ export default function SoulExciterApp() {
                     <p style={{ fontSize: 10.5, color: COLORS.muted, margin: "5px 0 0" }}>Paste the product link, then tap Autofill — always double-check the result before publishing.</p>
                   </FormField>
                 </div>
-                <button type="button" onClick={submitProduct} disabled={savingProduct} className="se-btn" style={{ marginTop: 16, background: COLORS.ink, color: "#fff", border: "none", padding: "11px 24px", borderRadius: 10, fontWeight: 700, fontSize: 13.5, cursor: savingProduct ? "default" : "pointer", opacity: savingProduct ? 0.7 : 1 }}>
+                <button type="button" onClick={submitProduct} disabled={savingProduct} className="se-btn" style={{ marginTop: 16, background: COLORS.ink, color: COLORS.dusk, border: "none", padding: "11px 24px", borderRadius: 10, fontWeight: 700, fontSize: 13.5, cursor: savingProduct ? "default" : "pointer", opacity: savingProduct ? 0.7 : 1 }}>
                   {savingProduct ? "Saving…" : editingId ? "Save changes" : "Publish to home feed"}
                 </button>
               </div>
@@ -805,8 +836,9 @@ export default function SoulExciterApp() {
                     className="se-btn"
                     style={{
                       whiteSpace: "nowrap", display: "flex", alignItems: "center", gap: 6, padding: "8px 16px", borderRadius: 999, fontSize: 12.5, fontWeight: 700, cursor: "pointer",
-                      border: "1.5px solid " + (active ? COLORS.ink : COLORS.line),
-                      background: active ? COLORS.ink : "#fff", color: active ? "#fff" : COLORS.ink,
+                      border: active ? "none" : "1px solid rgba(255,255,255,0.1)",
+                      background: active ? 'linear-gradient(135deg, #00d4ff, #a855f7)' : "rgba(255,255,255,0.06)", color: "#fff",
+                      backdropFilter: active ? "none" : "blur(10px)",
                     }}
                   >
                     <MainIcon size={14} />
@@ -816,10 +848,9 @@ export default function SoulExciterApp() {
               })}
             </div>
 
-            {/* SUBCATEGORY GRID — appears once a section is picked, like the
-                "Mobiles & Electronics" browse page on Amazon */}
+            {/* SUBCATEGORY GRID — appears once a section is picked */}
             {activeMain !== "All" && (
-              <div className="se-fadein" style={{ background: COLORS.card, border: "1px solid " + COLORS.line, borderRadius: 16, padding: "20px 20px 8px", marginBottom: 22 }}>
+              <div className="se-fadein se-glass" style={{ borderRadius: 16, padding: "20px 20px 8px", marginBottom: 22 }}>
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
                   <h3 style={{ fontSize: 16, fontWeight: 800, color: COLORS.ink, margin: 0 }}>{activeMain}</h3>
                   {category !== "All" && (
@@ -832,7 +863,6 @@ export default function SoulExciterApp() {
                   {CATEGORY_TREE.find((m) => m.name === activeMain).subcategories.map((sub) => {
                     const SubIcon = sub.icon;
                     const active = category === sub.name;
-                    const tint = CATEGORY_META[sub.name] ? CATEGORY_META[sub.name].tint : COLORS.cream;
                     return (
                       <button
                         key={sub.name}
@@ -844,7 +874,7 @@ export default function SoulExciterApp() {
                           border: "1.5px solid " + (active ? COLORS.orange : "transparent"), borderRadius: 14,
                         }}
                       >
-                        <div style={{ width: 54, height: 54, borderRadius: "50%", background: tint, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                        <div style={{ width: 54, height: 54, borderRadius: "50%", background: "rgba(0,0,0,0.3)", display: "flex", alignItems: "center", justifyContent: "center" }}>
                           <SubIcon size={22} color={COLORS.orange} />
                         </div>
                         <span style={{ fontSize: 11.5, fontWeight: 700, color: COLORS.ink, textAlign: "center", lineHeight: 1.3 }}>{sub.name}</span>
@@ -903,11 +933,11 @@ export default function SoulExciterApp() {
 
         {tab === "you" && (
           <div className="se-fadein" style={{ padding: "24px 0" }}>
-            <div style={{ background: `linear-gradient(120deg, ${COLORS.dusk}, ${COLORS.ink})`, borderRadius: 20, padding: 24, display: "flex", alignItems: "center", gap: 16, marginBottom: 20 }}>
-              <div style={{ width: 56, height: 56, borderRadius: "50%", background: COLORS.orange, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, color: "#fff", fontSize: 19 }}>SE</div>
+            <div className="se-glass" style={{ borderRadius: 20, padding: 24, display: "flex", alignItems: "center", gap: 16, marginBottom: 20 }}>
+              <div style={{ width: 56, height: 56, borderRadius: "50%", background: 'linear-gradient(135deg, #00d4ff, #a855f7)', display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, color: "#fff", fontSize: 19 }}>SE</div>
               <div>
                 <p style={{ color: "#fff", fontWeight: 800, fontSize: 17, margin: 0 }}>Hey, explorer</p>
-                <p style={{ color: "#ACA79A", fontSize: 13, margin: "2px 0 0" }}>Here's how your excitement is trending.</p>
+                <p style={{ color: COLORS.muted, fontSize: 13, margin: "2px 0 0" }}>Here's how your excitement is trending.</p>
               </div>
             </div>
 
@@ -930,7 +960,7 @@ export default function SoulExciterApp() {
             ) : (
               <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 24 }}>
                 {clickHistory.map((h) => (
-                  <div key={h.id} className="se-fadein" style={{ background: COLORS.card, border: "1px solid " + COLORS.line, borderRadius: 12, padding: "10px 14px", display: "flex", alignItems: "center", gap: 12 }}>
+                  <div key={h.id} className="se-fadein se-glass" style={{ borderRadius: 12, padding: "10px 14px", display: "flex", alignItems: "center", gap: 12 }}>
                     <img src={h.image} alt="" style={{ width: 40, height: 40, borderRadius: 8, objectFit: "cover" }} />
                     <div style={{ flex: 1 }}>
                       <p style={{ fontSize: 13.5, fontWeight: 700, color: COLORS.ink, margin: 0 }}>{h.name}</p>
@@ -943,7 +973,7 @@ export default function SoulExciterApp() {
             )}
 
             <h3 style={{ fontSize: 16, fontWeight: 800, color: COLORS.ink, marginBottom: 12 }}>Saved address</h3>
-            <div style={{ background: COLORS.card, border: "1px solid " + COLORS.line, borderRadius: 14, padding: 16, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <div className="se-glass" style={{ borderRadius: 14, padding: 16, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
               <div>
                 <p style={{ fontSize: 13.5, fontWeight: 700, color: COLORS.ink, margin: 0 }}>Home</p>
                 <p style={{ fontSize: 12.5, color: COLORS.muted, margin: "3px 0 0" }}>Checkout happens on the retailer's site, so we just keep this for your reference.</p>
@@ -975,7 +1005,7 @@ export default function SoulExciterApp() {
                     <button
                       onClick={() => moveToCart(p.id)}
                       className="se-btn"
-                      style={{ marginTop: 8, width: "100%", background: COLORS.mint, color: "#fff", border: "none", padding: "9px 0", borderRadius: 10, fontWeight: 700, fontSize: 12.5, cursor: "pointer" }}
+                      style={{ marginTop: 8, width: "100%", background: 'linear-gradient(135deg, #00d4ff, #a855f7)', color: "#fff", border: "none", padding: "9px 0", borderRadius: 10, fontWeight: 700, fontSize: 12.5, cursor: "pointer" }}
                     >
                       Move to cart
                     </button>
@@ -1002,7 +1032,7 @@ export default function SoulExciterApp() {
               <div style={{ display: "grid", gridTemplateColumns: "1.6fr 1fr", gap: 20, alignItems: "start" }}>
                 <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
                   {cartProducts.map(({ id, qty, product }) => (
-                    <div key={id} className="se-fadein" style={{ background: COLORS.card, border: "1px solid " + COLORS.line, borderRadius: 14, padding: 12, display: "flex", gap: 12, alignItems: "center" }}>
+                    <div key={id} className="se-fadein se-glass" style={{ borderRadius: 14, padding: 12, display: "flex", gap: 12, alignItems: "center" }}>
                       <img src={product.image} alt="" style={{ width: 64, height: 64, borderRadius: 10, objectFit: "cover" }} />
                       <div style={{ flex: 1, minWidth: 0 }}>
                         <p style={{ fontSize: 13.5, fontWeight: 700, color: COLORS.ink, margin: 0, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{product.name}</p>
@@ -1021,7 +1051,7 @@ export default function SoulExciterApp() {
                   ))}
                 </div>
 
-                <div style={{ background: COLORS.card, border: "1px solid " + COLORS.line, borderRadius: 16, padding: 20, position: "sticky", top: 90 }}>
+                <div className="se-glass" style={{ borderRadius: 16, padding: 20, position: "sticky", top: 90 }}>
                   <h3 style={{ fontSize: 15, fontWeight: 800, color: COLORS.ink, margin: "0 0 14px" }}>Order summary</h3>
                   <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13, color: COLORS.muted, marginBottom: 8 }}>
                     <span>Items ({cartCount})</span><span>{formatINR(subtotal)}</span>
@@ -1033,7 +1063,7 @@ export default function SoulExciterApp() {
                   <button
                     onClick={() => cartProducts.forEach(({ product }) => viewDeal(product))}
                     className="se-btn"
-                    style={{ width: "100%", background: COLORS.orange, color: "#fff", border: "none", padding: "12px 0", borderRadius: 11, fontWeight: 700, fontSize: 13.5, cursor: "pointer" }}
+                    style={{ width: "100%", background: 'linear-gradient(135deg, #00d4ff, #a855f7)', color: "#fff", border: "none", padding: "12px 0", borderRadius: 11, fontWeight: 700, fontSize: 13.5, cursor: "pointer" }}
                   >
                     Continue to store links
                   </button>
@@ -1045,8 +1075,8 @@ export default function SoulExciterApp() {
       </div>
 
       {toast && (
-        <div className="se-pop" style={{ position: "fixed", bottom: 22, right: 22, background: COLORS.ink, color: "#fff", padding: "12px 18px", borderRadius: 12, fontSize: 13, fontWeight: 600, boxShadow: "0 10px 24px rgba(0,0,0,0.25)", zIndex: 60, display: "flex", alignItems: "center", gap: 8 }}>
-          <Zap size={14} fill={COLORS.yellow} stroke={COLORS.yellow} /> {toast}
+        <div className="se-pop se-glass" style={{ position: "fixed", bottom: 22, right: 22, background: "rgba(10,14,26,0.9)", color: "#fff", padding: "12px 18px", borderRadius: 12, fontSize: 13, fontWeight: 600, boxShadow: "0 10px 24px rgba(0,0,0,0.25)", border: "1px solid rgba(0,212,255,0.2)", zIndex: 60, display: "flex", alignItems: "center", gap: 8 }}>
+          <Zap size={14} fill={COLORS.orange} stroke={COLORS.orange} /> {toast}
         </div>
       )}
     </div>
@@ -1054,13 +1084,13 @@ export default function SoulExciterApp() {
 }
 
 const inputStyle = {
-  width: "100%", padding: "9px 11px", borderRadius: 9, border: "1px solid " + COLORS.line, fontSize: 13, outline: "none", boxSizing: "border-box", fontFamily: "Inter, sans-serif", color: COLORS.ink,
+  width: "100%", padding: "9px 11px", borderRadius: 9, border: "1px solid rgba(255,255,255,0.1)", background: "rgba(255,255,255,0.06)", fontSize: 13, outline: "none", boxSizing: "border-box", fontFamily: "Inter, sans-serif", color: "#e2e8f0",
 };
 
 function FormField({ label, children }) {
   return (
     <div>
-      <label style={{ fontSize: 11.5, fontWeight: 700, color: COLORS.muted, marginBottom: 5, display: "block" }}>{label}</label>
+      <label style={{ fontSize: 11.5, fontWeight: 700, color: "#94a3b8", marginBottom: 5, display: "block" }}>{label}</label>
       {children}
     </div>
   );
@@ -1068,7 +1098,7 @@ function FormField({ label, children }) {
 
 function StatCard({ label, value }) {
   return (
-    <div style={{ background: COLORS.card, border: "1px solid " + COLORS.line, borderRadius: 14, padding: "14px 16px" }}>
+    <div className="se-glass" style={{ borderRadius: 14, padding: "14px 16px" }}>
       <p style={{ fontSize: 11.5, color: COLORS.muted, fontWeight: 700, margin: 0, textTransform: "uppercase", letterSpacing: "0.04em" }}>{label}</p>
       <p style={{ fontSize: 21, fontWeight: 800, color: COLORS.ink, margin: "4px 0 0" }}>{value}</p>
     </div>
